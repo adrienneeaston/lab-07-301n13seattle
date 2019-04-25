@@ -25,11 +25,11 @@ app.listen(PORT, () => console.log(`City Explorer is up on ${PORT}`));
 function searchToLatLong(request, response) {
   // Define the URL for the GEOCODE  API
   const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${request.query.data}&key=${process.env.GEOCODE_API_KEY}`;
-  console.log(url);
+  // console.log(url);
 
   superagent.get(url)
     .then(result => {
-      console.log(result.body.results[0]);
+      // console.log(result.body.results[0]);
       const location = new Location(request.query.data, result);
       response.send(location);
     })
