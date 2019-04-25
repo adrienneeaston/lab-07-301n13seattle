@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 //load environment variables
 require('dotenv').config();
@@ -44,8 +44,8 @@ app.get('/weather', (request, response) => {
   }
 
 
-  //call a get weather function , 
-  //process the data from the darksky json in a constructor, 
+  //call a get weather function ,
+  //process the data from the darksky json in a constructor,
   //return the results
   // response.send('return the results here');
 });
