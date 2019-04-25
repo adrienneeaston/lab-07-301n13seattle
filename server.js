@@ -1,93 +1,70 @@
 'use strict';
 
-//load environment variables
+// Load Environment Variables from the .env file
 require('dotenv').config();
 
+// Application Dependencies
 const express = require('express');
-
-const app = express();
-
 const cors = require('cors');
+const superagent = require('superagent');
 
+// Application Setup
+const app = express();
 app.use(cors());
+const PORT = process.env.PORT
 
-const PORT = process.env.PORT;
+// Incoming API Routes
+app.get('/location', searchToLatLong);
+app.get('/weather', getWeather);
 
-app.get('/testing', (request, response) => {
-  console.log('found the testing route');
-  response.send('<h1> HEY WORLD </h1>');
-});
+// Make sure the server is listening for requests
+app.listen(PORT, () => console.log(`City Explorer is up on ${PORT}`));
 
-app.get('/location', (request, response) => {
-  try{
-    const locationData = searchToLatLong(request.query.data);
-    console.log(locationData);
-    response.send(locationData);
-  }
-  catch (error){
-    console.error(error);
-    response.status(500).send('status: 500. So so so Sorry, something went wrong');
-  }
-});
+// Helper Functions
 
-app.get('/weather', (request, response) => {
-  console.log('From weather request', request.query.data.latitude);
+function searchToLatLong(request, response) {
+  // Define the URL for the GEOCODE  API
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${request.query.data}&key=${process.env.GEOCODE_API_KEY}`;
+  console.log(url);
 
-
-  try {
-    const newWeatherData  = searchForWeatherAndTime(request.query.data.formatted_query);
-    response.send(newWeatherData);
-  }
-  catch (error) {
-    console.error(error);
-    response.status(500).send('Status: 500. I don\'t know what happen man!');
-  }
-
-
-  //call a get weather function ,
-  //process the data from the darksky json in a constructor,
-  //return the results
-  // response.send('return the results here');
-});
-
-app.listen(PORT, () => console.log(`Listen on Port ${PORT}.`));
-
-//Helper Functions
-function searchToLatLong(query) {
-  const geoData = require('./data/geo.json');
-  const location = new Location(geoData);
-  console.log(location);
-  return location;
+  superagent.get(url)
+    .then(result => {
+      console.log(result.body.results[0]);
+      const location = new Location(request.query.data, result);
+      response.send(location);
+    })
+    .catch(err => handleError(err, response));
 }
 
-function Location(data) {
-  this.formatted_query = data.results[0].formatted_address;
-  this.latitude = data.results[0].geometry.location.lat;
-  this.longitude = data.results[0].geometry.location.lng;
+function Location(query, res) {
+  this.search_query = query;
+  this.formatted_query = res.body.results[0].formatted_address;
+  this.latitude = res.body.results[0].geometry.location.lat;
+  this.longitude = res.body.results[0].geometry.location.lng;
 }
 
-function searchForWeatherAndTime(query) {
+function getWeather(request, response) {
+  // Define the URL for the DARKSKY API
+  const url = `https://api.darksky.net/forecast/${process.env.WEATHER_API_KEY}/${request.query.data.latitude},${request.query.data.longitude}`;
+  // console.log(url);
 
-  const weatherSummary = [];
-
-  console.log(weatherSummary);
-
-  const weatherData = require('./data/darksky.json');
-
-  weatherData.daily.data.forEach((element) => {
-    let weather = new Weather(element);
-    weatherSummary.push(weather);
-  });
-
-  console.log(weatherSummary);
-
-  return weatherSummary;
+  superagent.get(url)
+    .then(result => {
+      // console.log(result.body);
+      const weatherSummaries = result.body.daily.data.map(day => new Weather(day));
+      response.send(weatherSummaries);
+    })
+    .catch(err => handleError(err, response));
 }
 
-function Weather(data) {
-  this.time = new Date(data.time).toString();
-  this.forecast = data.summary;
+function Weather(day) {
+  this.forecast = day.summary;
+  this.time = new Date(day.time * 1000).toString().slice(0, 15);
 }
 
-
+// Error Handler
+function handleError(err, response) {
+  console.error(err);
+  if (response) response.status(500).send('Sorry something went wrong');
+}
 
