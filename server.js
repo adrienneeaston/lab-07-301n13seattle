@@ -1,31 +1,45 @@
 'use strict';
 
 // Load Environment Variables from the .env file
+
 require('dotenv').config();
 
+
 // Application Dependencies
+
 const express = require('express');
 const cors = require('cors');
 const superagent = require('superagent');
 
+
 // Application Setup
+
 const app = express();
 app.use(cors());
 const PORT = process.env.PORT
 
+
 // Incoming API Routes
+
 app.get('/location', searchToLatLong);
 app.get('/weather', getWeather);
 app.get('/event', getEvent);
-// app.get('/, getReview');
-// app.get('/, getMeetup');
-// app.get('/, getMovie');
-// app.get('/, getEvent')
+
+// for later expansion
+
+// app.get('/review, getReview');
+// app.get('/meetup, getMeetup');
+// app.get('/movie, getMovie');
+
 
 // Make sure the server is listening for requests
+
 app.listen(PORT, () => console.log(`City Explorer is up on ${PORT}`));
 
+
 // Helper Functions
+
+// accesses google maps - working
 
 function searchToLatLong(request, response) {
   // Define the URL for the GEOCODE  API
@@ -48,7 +62,8 @@ function Location(query, res) {
   this.longitude = res.body.results[0].geometry.location.lng;
 }
 
-// accesses Darksky
+
+// accesses Darksky - working
 
 function getWeather(request, response) {
   // Define the URL for the DARKSKY API
@@ -69,6 +84,7 @@ function Weather(day) {
   this.time = new Date(day.time * 1000).toString().slice(0, 15);
 }
 
+
 // accesses Eventbrite
 
 function getEvent(request, response) {
@@ -86,6 +102,9 @@ function Event() {
 
 }
 
+
+// for later expansion
+
 // accesses movie database
 
 // function getMovie(request, response) {
@@ -102,6 +121,7 @@ function Event() {
 // function Movie() {
 
 // }
+
 
 // accesses Yelp
 
@@ -121,6 +141,7 @@ function Event() {
 // function Review() {
 
 // }
+
 
 // accesses Meetup
 
@@ -142,6 +163,7 @@ function Event() {
 
 
 // Error Handler
+
 function handleError(err, response) {
   console.error(err);
   if (response) response.status(500).send('Sorry something went wrong');
