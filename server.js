@@ -16,6 +16,11 @@ const PORT = process.env.PORT
 // Incoming API Routes
 app.get('/location', searchToLatLong);
 app.get('/weather', getWeather);
+app.get('/event', getEvent);
+// app.get('/, getReview');
+// app.get('/, getMeetup');
+// app.get('/, getMovie');
+// app.get('/, getEvent')
 
 // Make sure the server is listening for requests
 app.listen(PORT, () => console.log(`City Explorer is up on ${PORT}`));
@@ -43,6 +48,8 @@ function Location(query, res) {
   this.longitude = res.body.results[0].geometry.location.lng;
 }
 
+// accesses Darksky
+
 function getWeather(request, response) {
   // Define the URL for the DARKSKY API
   const url = `https://api.darksky.net/forecast/${process.env.WEATHER_API_KEY}/${request.query.data.latitude},${request.query.data.longitude}`;
@@ -61,6 +68,78 @@ function Weather(day) {
   this.forecast = day.summary;
   this.time = new Date(day.time * 1000).toString().slice(0, 15);
 }
+
+// accesses Eventbrite
+
+function getEvent(request, response) {
+  const url = `https://www.eventbriteapi.com/v3/events/search/?token=${EVENTBRITE_API_KEY}`
+
+  superagent.get(url)
+  .then(result => {
+    const eventSummaries = 
+    response.send(eventSummaries);
+  })
+  .catch(err => handleError(err, response));
+}
+
+function Event() {
+
+}
+
+// accesses movie database
+
+// function getMovie(request, response) {
+//   const url = 
+  
+//   superagent.get(url)
+//     .then(result => {
+//       const movieSummaries = 
+//       response.send(moviesummaries);
+//     })
+//     .catch(err => handleError(err, response));
+// }
+
+// function Movie() {
+
+// }
+
+// accesses Yelp
+
+// function getReview(request, response) {
+//   const url = 
+
+//   superagent.get(url)
+//     .then(result => {
+//       // console.log(result.body);
+//       const yelpReviews = 
+//       response.send(yelpReviews);
+//     })
+//     .catch(err => handleError(err, response));
+  
+// }
+  
+// function Review() {
+
+// }
+
+// accesses Meetup
+
+// function getMeetup(request, response) {
+//   const url = 
+
+//   superagent.get(url)
+//     .then(result => {
+//       const meetupEvents = 
+//       response.send(meetupEvents);
+//     })
+//     .catch(err => handleError(err, response));
+
+// }
+
+// function Meetup() {
+
+// }
+
 
 // Error Handler
 function handleError(err, response) {
